@@ -363,7 +363,7 @@ def _finalizar_bloco_gw(registros, bloco):
         empresa_b = nao_zero[-1] if nao_zero else None
     if empresa_b is None:
         return
-=======
+
     empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else valores_antes_cte[0]
  main
 
