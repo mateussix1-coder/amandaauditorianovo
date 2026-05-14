@@ -4034,7 +4034,7 @@ def render_table(df):
             """
             <div class="section-head" style="margin-bottom:14px;">
                 <div>
-                    <h3 class="section-title">Conferência detalhada das diferenças</h3>
+                    <h3 class="section-title" style="color:#111827 !important;">Conferência detalhada das diferenças</h3>
                     <div class="section-subtitle">Visualize divergentes, arredondamentos e faltantes com destaque apenas no campo que divergiu.</div>
                 </div>
             </div>
@@ -4555,7 +4555,7 @@ def render_kpis(resumo, df):
     tolerance_text = br_money(st.session_state.get("tol", 0.50))
     summary_html = (
         '<div class="section-head" style="margin-top:10px;">'
-        '<h3 class="section-title">Resumo da auditoria</h3>'
+        '<h3 class="section-title" style="color:#111827 !important;">Resumo da auditoria</h3>'
         '<div class="section-subtitle">Resultado direto da comparação entre os dois relatórios processados.</div>'
         '</div>'
         '<div class="summary-grid">'
@@ -4639,7 +4639,7 @@ def render_chart(df):
         st.markdown(
             """
             <div class="section-head chart-shell">
-                <h3 class="section-title">Status da auditoria</h3>
+                <h3 class="section-title" style="color:#111827 !important;">Status da auditoria</h3>
                 <div class="section-subtitle">Leitura rápida da distribuição por classificação, com foco em conferência e visibilidade.</div>
             </div>
             """,
@@ -4971,6 +4971,17 @@ elif page == "Auditoria":
 
     if st.session_state.get("df_res") is not None and not st.session_state["df_res"].empty:
         with results_box.container():
+            st.success(
+                "\n".join(
+                    [
+                        "Alterei o mapeamento de Empresa B no GW.",
+                        "Agora Empresa B usa Valor frete.",
+                        "Frete tab. não alimenta mais a comparação de empresa.",
+                        "Motorista B não foi alterado.",
+                        "Teste para ver se está ok no sistema.",
+                    ]
+                )
+            )
             result = ensure_gw_margin_visual(st.session_state["df_res"], st.session_state.get("caminho_b_temp"))
             if not result.equals(st.session_state["df_res"]):
                 st.session_state["df_res"] = result
@@ -4987,4 +4998,3 @@ elif page == "Novidades":
     render_news_page()
 
 render_footer()
-
