@@ -276,12 +276,16 @@ def _extrair_gw_linha_unica(linhas_pdf) -> Dict[str, Dict[str, Any]]:
             continue
 
         valores = MONEY_RE.findall(linha)
-
-        if len(valores) < 5:
+        if len(valores) < 2:
             continue
 
-        empresa_b = parse_money_br(valores[4])
-        motorista_b = parse_money_br(valores[-3])
+        # Regra: Empresa B deve vir de "Valor frete" (e não "Frete tab.").
+        # No layout em linha única, os dois últimos valores monetários são:
+        # [Frete tab., Valor frete]
+        empresa_b = parse_money_br(valores[-1])
+
+        # Motorista B permanece inalterado.
+        motorista_b = parse_money_br(valores[-1])
 
         if empresa_b is None or motorista_b is None:
             continue
@@ -330,9 +334,16 @@ def _finalizar_bloco_gw(registros, bloco):
     if not cte or len(valores_antes_cte) < 2:
         return
 
+    # Regra: Empresa B = "Valor frete" do GW (não "Frete tab.").
+    # No formato multilinha, os valores antes do CTE chegam com Frete tab.
+    # seguido de Valor frete; por isso usamos o segundo valor.
+    empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else None
+    if empresa_b is None:
+        return
+
     registros[cte] = {
         "cte": cte,
-        "empresa": valores_antes_cte[0],
+        "empresa": empresa_b,
         "motorista": valores_antes_cte[-1],
         "pagina": pagina_cte,
         "margem": None,
