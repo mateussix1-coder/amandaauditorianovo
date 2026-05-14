@@ -268,13 +268,32 @@ def extrair_atua_por_blocos(caminho_pdf) -> Dict[str, Dict[str, Any]]:
 
 def _extrair_gw_linha_unica(linhas_pdf) -> Dict[str, Dict[str, Any]]:
     registros = {}
+
     for page_num, linha in linhas_pdf:
         m = RE_GW_LINHA.match(linha)
         if not m:
             continue
+
         cte = normalizar_cte(m.group(1))
         if not cte:
             continue
+
+ codex/test-system-after-mapping-changes-rmuh98
+        tokens = MONEY_RE.findall(linha)
+        valores = [parse_money_br(v) for v in tokens]
+        valores = [v for v in valores if v is not None]
+
+        if len(valores) < 2:
+            continue
+
+        # REGRA CORRETA DO GW:
+        # Na linha do CTE, o primeiro valor financeiro é "Valor frete".
+        # Esse é o campo correto para Empresa B.
+        empresa_b = valores[0]
+
+        # Motorista B deve permanecer como já estava na lógica original:
+        # último valor financeiro da linha, correspondente ao Vl Carreteiro Líquido.
+        motorista_b = valores[-1]
 
  codex/test-system-after-mapping-changes-djn5sw
         valores = MONEY_RE.findall(linha)
@@ -319,17 +338,23 @@ def _extrair_gw_linha_unica(linhas_pdf) -> Dict[str, Dict[str, Any]]:
         motorista_b = parse_money_br(valores[-3])
  main
  main
+ main
 
         if empresa_b is None or motorista_b is None:
             continue
+
+        margem = None
+        percentuais = RE_PERCENT.findall(linha)
+        if percentuais:
+            margem = percentuais[-1]
 
         registros[cte] = {
             "cte": cte,
             "empresa": empresa_b,
             "motorista": motorista_b,
             "pagina": page_num,
-            "margem": None,
-            "raw": linha
+            "margem": margem,
+            "raw": linha,
         }
     return registros
 
@@ -368,12 +393,18 @@ def _finalizar_bloco_gw(registros, bloco):
         return
 
     # Regra: Empresa B = "Valor frete" do GW (não "Frete tab.").
+ codex/test-system-after-mapping-changes-rmuh98
+    # No formato multilinha, considera o segundo valor financeiro do bloco.
+
     # No formato multilinha, os valores antes do CTE chegam com Frete tab.
     # seguido de Valor frete; por isso usamos o segundo valor.
  codex/test-system-after-mapping-changes-djn5sw
+ main
     empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else None
     if empresa_b is None:
         return
+
+ codex/test-system-after-mapping-changes-rmuh98
 
 
  codex/test-system-after-mapping-changes-mlhld0
@@ -387,6 +418,7 @@ def _finalizar_bloco_gw(registros, bloco):
     empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else valores_antes_cte[0]
  main
 
+ main
  main
     registros[cte] = {
         "cte": cte,
