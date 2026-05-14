@@ -276,6 +276,19 @@ def _extrair_gw_linha_unica(linhas_pdf) -> Dict[str, Dict[str, Any]]:
         if not cte:
             continue
 
+ codex/test-system-after-mapping-changes-djn5sw
+        valores = MONEY_RE.findall(linha)
+        if len(valores) < 2:
+            continue
+
+        # Regra: Empresa B deve vir de "Valor frete" (e não "Frete tab.").
+        # No layout em linha única, os dois últimos valores monetários são:
+        # [Frete tab., Valor frete]
+        empresa_b = parse_money_br(valores[-1])
+
+        # Motorista B permanece inalterado.
+        motorista_b = parse_money_br(valores[-1])
+
         valores_raw = RE_GW_NUM_TOKEN.findall(linha)
         # Remove CTE/data e mantém apenas números da grade financeira da linha.
         # Ex.: 001960 01/04/2026 ... -> [frete, pedagio, adval, gris, frete_tab, valor_frete, ...]
@@ -304,6 +317,7 @@ def _extrair_gw_linha_unica(linhas_pdf) -> Dict[str, Dict[str, Any]]:
         # Mantemos Motorista B inalterado em valores[-3].
         empresa_b = parse_money_br(valores[-4])
         motorista_b = parse_money_br(valores[-3])
+ main
  main
 
         if empresa_b is None or motorista_b is None:
@@ -356,6 +370,12 @@ def _finalizar_bloco_gw(registros, bloco):
     # Regra: Empresa B = "Valor frete" do GW (não "Frete tab.").
     # No formato multilinha, os valores antes do CTE chegam com Frete tab.
     # seguido de Valor frete; por isso usamos o segundo valor.
+ codex/test-system-after-mapping-changes-djn5sw
+    empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else None
+    if empresa_b is None:
+        return
+
+
  codex/test-system-after-mapping-changes-mlhld0
     empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else None
     if empresa_b == Decimal("0.00"):
@@ -367,6 +387,7 @@ def _finalizar_bloco_gw(registros, bloco):
     empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else valores_antes_cte[0]
  main
 
+ main
     registros[cte] = {
         "cte": cte,
         "empresa": empresa_b,
