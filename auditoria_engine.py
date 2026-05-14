@@ -133,6 +133,7 @@ def _extrair_linhas_pdfplumber(caminho_pdf):
 RE_ATUA_LINHA = re.compile(r"^\s*(\d{4,6})\s+CT\b")
 # Regex para linha de CTE do GW: "001752 01/04/2026 ..."
 RE_GW_LINHA = re.compile(r"^\s*(\d{4,6})\s+\d{2}/\d{2}/\d{4}\b")
+RE_GW_NUM_TOKEN = re.compile(r"-?\d[\d\.]*,\d{2}|-?\d+\.\d{2}")
 
 ATUA_HEADER_LINES = {
     "Numero",
@@ -277,6 +278,7 @@ def _extrair_gw_linha_unica(linhas_pdf) -> Dict[str, Dict[str, Any]]:
         if not cte:
             continue
 
+ codex/test-system-after-mapping-changes-rmuh98
         tokens = MONEY_RE.findall(linha)
         valores = [parse_money_br(v) for v in tokens]
         valores = [v for v in valores if v is not None]
@@ -292,6 +294,51 @@ def _extrair_gw_linha_unica(linhas_pdf) -> Dict[str, Dict[str, Any]]:
         # Motorista B deve permanecer como já estava na lógica original:
         # último valor financeiro da linha, correspondente ao Vl Carreteiro Líquido.
         motorista_b = valores[-1]
+
+ codex/test-system-after-mapping-changes-djn5sw
+        valores = MONEY_RE.findall(linha)
+        if len(valores) < 2:
+            continue
+
+        # Regra: Empresa B deve vir de "Valor frete" (e não "Frete tab.").
+        # No layout em linha única, os dois últimos valores monetários são:
+        # [Frete tab., Valor frete]
+        empresa_b = parse_money_br(valores[-1])
+
+        # Motorista B permanece inalterado.
+        motorista_b = parse_money_br(valores[-1])
+
+        valores_raw = RE_GW_NUM_TOKEN.findall(linha)
+        # Remove CTE/data e mantém apenas números da grade financeira da linha.
+        # Ex.: 001960 01/04/2026 ... -> [frete, pedagio, adval, gris, frete_tab, valor_frete, ...]
+        valores = [parse_money_br(v) for v in valores_raw]
+        valores = [v for v in valores if v is not None]
+
+        if len(valores) < 2:
+            continue
+
+ codex/test-system-after-mapping-changes-mlhld0
+        # Regra obrigatória: Empresa B = Valor frete (não Frete tab.).
+        # No GW de linha única, o Valor frete é o valor imediatamente após Frete tab.
+        # Quando a estrutura não vier completa, usamos o último valor não-zero para
+        # evitar cair em 0,00 por falha de extração.
+        empresa_b = valores[5] if len(valores) > 5 else None
+        if empresa_b is None or empresa_b == Decimal("0.00"):
+            nao_zero = [v for v in valores if v != Decimal("0.00")]
+            empresa_b = nao_zero[-1] if nao_zero else None
+
+        # Motorista B permanece com a regra existente do parser.
+        motorista_b = parse_money_br(MONEY_RE.findall(linha)[-1]) if MONEY_RE.findall(linha) else None
+
+        # Regra: Empresa B deve usar "Valor frete" (e não "Frete tab.").
+        # No layout de linha única do GW, o último bloco monetário contém:
+        # [..., Frete tab., Valor frete, Motorista B, ...]
+        # Mantemos Motorista B inalterado em valores[-3].
+        empresa_b = parse_money_br(valores[-4])
+        motorista_b = parse_money_br(valores[-3])
+ main
+ main
+ main
 
         if empresa_b is None or motorista_b is None:
             continue
@@ -346,11 +393,33 @@ def _finalizar_bloco_gw(registros, bloco):
         return
 
     # Regra: Empresa B = "Valor frete" do GW (não "Frete tab.").
+ codex/test-system-after-mapping-changes-rmuh98
     # No formato multilinha, considera o segundo valor financeiro do bloco.
+
+    # No formato multilinha, os valores antes do CTE chegam com Frete tab.
+    # seguido de Valor frete; por isso usamos o segundo valor.
+ codex/test-system-after-mapping-changes-djn5sw
+ main
     empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else None
     if empresa_b is None:
         return
 
+ codex/test-system-after-mapping-changes-rmuh98
+
+
+ codex/test-system-after-mapping-changes-mlhld0
+    empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else None
+    if empresa_b == Decimal("0.00"):
+        nao_zero = [v for v in valores_antes_cte if v != Decimal("0.00")]
+        empresa_b = nao_zero[-1] if nao_zero else None
+    if empresa_b is None:
+        return
+
+    empresa_b = valores_antes_cte[1] if len(valores_antes_cte) >= 2 else valores_antes_cte[0]
+ main
+
+ main
+ main
     registros[cte] = {
         "cte": cte,
         "empresa": empresa_b,
