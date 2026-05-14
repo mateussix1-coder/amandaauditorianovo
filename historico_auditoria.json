@@ -1,0 +1,47 @@
+[
+  {
+    "data_hora": "14/05/2026 09:55:08",
+    "arquivo_a": "ABRIL ATUA.pdf",
+    "arquivo_b": "ABRIL GW.pdf",
+    "tolerancia": 0.5,
+    "total": 1715,
+    "ok": 496,
+    "ok_arredondamento": 747,
+    "divergentes": 430,
+    "faltantes_a": 26,
+    "faltantes_b": 16,
+    "dif_total_empresa": -10912.19,
+    "dif_total_motorista": -94389.7,
+    "impacto_absoluto": 1377376.52
+  },
+  {
+    "data_hora": "14/05/2026 09:52:29",
+    "arquivo_a": "ABRIL ATUA.pdf",
+    "arquivo_b": "ABRIL GW.pdf",
+    "tolerancia": 0.5,
+    "total": 1715,
+    "ok": 496,
+    "ok_arredondamento": 747,
+    "divergentes": 430,
+    "faltantes_a": 26,
+    "faltantes_b": 16,
+    "dif_total_empresa": -10912.19,
+    "dif_total_motorista": -94389.7,
+    "impacto_absoluto": 1377376.52
+  },
+  {
+    "data_hora": "14/05/2026 09:45:59",
+    "arquivo_a": "ABRIL ATUA.pdf",
+    "arquivo_b": "ABRIL GW.pdf",
+    "tolerancia": 0.0,
+    "total": 1715,
+    "ok": 496,
+    "ok_arredondamento": 0,
+    "divergentes": 1177,
+    "faltantes_a": 26,
+    "faltantes_b": 16,
+    "dif_total_empresa": -10912.19,
+    "dif_total_motorista": -94389.7,
+    "impacto_absoluto": 1377503.02
+  }
+]
